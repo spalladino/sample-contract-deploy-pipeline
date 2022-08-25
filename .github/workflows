@@ -1,0 +1,47 @@
+---
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use node@14
+        uses: actions/setup-node@v1
+        with: {node-version: 14.x}
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Node modules cache
+        uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            ${{ steps.yarn-cache-dir-path.outputs.dir }}
+            ~/.cache/node-gyp-cache
+          key: ${{ runner.os }}-yarn-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock')
+            }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-${{ env.cache-name }}-
+        env:
+          cache-name: v1
+
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Compile contracts
+        run: yarn build
+
+      - name: Save build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts
+          path: artifacts/contracts
