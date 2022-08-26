@@ -45,3 +45,63 @@ jobs:
         with:
           name: artifacts
           path: artifacts/contracts
+
+  propose-upgrade:
+    name: Upgrade
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use node@14
+        uses: actions/setup-node@v1
+        with: {node-version: 14.x}
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Node modules cache
+        uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            ${{ steps.yarn-cache-dir-path.outputs.dir }}
+            ~/.cache/node-gyp-cache
+          key: ${{ runner.os }}-yarn-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock')
+            }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-${{ env.cache-name }}-
+        env:
+          cache-name: v1
+
+      - name: Get build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: artifacts
+          path: artifacts/contracts
+
+      - name: Show downloaded build artifacts
+        run: ls -R artifacts
+
+      - name: Propose upgrade to new version
+        run: yarn hardhat run scripts/propose-upgrade.js --network goerli
+        env:
+          # URL used to reference the bytecode verification
+          WORKFLOW_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          # Address of the contract to upgrade
+          ADDRESS: "0x96F2B948d40006d9BaF546Ae507A7f27702128C1"
+          # Upgradeability owner
+          OWNER: "0xE3D450F1C50757fFB2b5ddE03A1A0d7Bc32F0153"
+          # Use dev environment instead of production
+          DEFENDER_ADMIN_API_URL: "https://9ybn7i3oe4.execute-api.us-east-2.amazonaws.com/dev/"
+          DEFENDER_ADMIN_POOL_ID: "us-east-2_1jXMfcFAa"
+          DEFENDER_ADMIN_POOL_CLIENT_ID: "4osojg8pmt29f4blrpknrc8i9v"
+          # API keys to Defender
+          DEFENDER_API_KEY: "${{ secrets.DEFENDER_DEV_API_KEY }}"
+          DEFENDER_API_SECRET: "${{ secrets.DEFENDER_DEV_API_SECRET }}"
+          # Hardhat connection settings (TODO: use a relayer!)
+          PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
+          INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
