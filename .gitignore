@@ -2,3 +2,5 @@
 /build
 /artifacts
 /cache
+/address.txt
+.env

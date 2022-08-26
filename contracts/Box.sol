@@ -1,14 +1,37 @@
+// SPDX-License-Identifier: WTFPL
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Base.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-contract Box is BaseContract, Ownable {
-  address public who;
+contract Box is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+    uint256 public value;
 
-  constructor(uint256 value, address initialWho) BaseContract(value) {
-    require(initialWho != address(0), "Who cannot be zero");
-    who = initialWho;
-  }
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(uint256 initialValue, address initialOwner) initializer public {
+        __Ownable_init();
+        __UUPSUpgradeable_init();
+        _transferOwnership(initialOwner);
+        value = initialValue;
+    }
+
+    function setValue(uint256 newValue) external {
+      value = newValue;
+    }
+
+    function version() external pure returns (string memory) {
+      return "v2";
+    }
+
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        onlyOwner
+        override
+    {}
+
 }
-
