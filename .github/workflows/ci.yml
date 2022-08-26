@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: artifacts
-          path: artifacts/contracts
+          path: artifacts
 
   propose-upgrade:
     name: Upgrade
@@ -92,7 +92,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: artifacts
-          path: artifacts/contracts
+          path: artifacts
 
       - name: Show downloaded build artifacts
         run: ls -R artifacts
