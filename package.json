@@ -12,7 +12,7 @@
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.1.1",
     "@openzeppelin/contracts": "^4.7.3",
-    "@openzeppelin/hardhat-defender": "/home/spalladino/Projects/upgrades/packages/plugin-defender-hardhat",
+    "@openzeppelin/hardhat-defender": "1.8.0-rc.1",
     "@openzeppelin/hardhat-upgrades": "^1.20.0",
     "dotenv": "^16.0.1",
     "ethers": "^5.7.0",
