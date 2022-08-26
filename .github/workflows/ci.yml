@@ -8,6 +8,10 @@ jobs:
     name: Build
     runs-on: ubuntu-20.04
     timeout-minutes: 10
+    env:
+      # Hardhat connection settings (TODO: use a relayer!)
+      PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
+      INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
 
     steps:
       - uses: actions/checkout@v2
@@ -51,6 +55,10 @@ jobs:
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     needs: build
+    env:
+      # Hardhat connection settings (TODO: use a relayer!)
+      PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
+      INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
 
     steps:
       - uses: actions/checkout@v2
@@ -102,6 +110,4 @@ jobs:
           # API keys to Defender
           DEFENDER_API_KEY: "${{ secrets.DEFENDER_DEV_API_KEY }}"
           DEFENDER_API_SECRET: "${{ secrets.DEFENDER_DEV_API_SECRET }}"
-          # Hardhat connection settings (TODO: use a relayer!)
-          PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
-          INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
+          
