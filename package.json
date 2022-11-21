@@ -12,8 +12,9 @@
   "license": "MIT",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.1.1",
+    "@nomiclabs/hardhat-etherscan": "^3.1.2",
     "@openzeppelin/contracts": "^4.7.3",
-    "@openzeppelin/hardhat-defender": "1.8.0-rc.1",
+    "@openzeppelin/hardhat-defender": "^1.8.1",
     "@openzeppelin/hardhat-upgrades": "^1.20.0",
     "chai": "^4.3.7",
     "dotenv": "^16.0.1",

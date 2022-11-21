@@ -52,7 +52,6 @@ jobs:
       - name: Show downloaded build artifacts
         run: ls -R artifacts
 
-
       - name: Run unit tests
         run: yarn test --no-compile
         
