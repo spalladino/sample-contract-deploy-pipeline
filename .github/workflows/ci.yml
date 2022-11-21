@@ -25,7 +25,7 @@ jobs:
         run: yarn build
 
       - name: Save build artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts
           path: artifacts
@@ -42,8 +42,19 @@ jobs:
           node-version: '14'
           cache: 'yarn'
       - run: yarn install --frozen-lockfile
+
+      - name: Get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: artifacts
+          path: artifacts
+
+      - name: Show downloaded build artifacts
+        run: ls -R artifacts
+
+
       - name: Run unit tests
-        run: yarn test
+        run: yarn test --no-compile
         
 
   # propose-upgrade:
