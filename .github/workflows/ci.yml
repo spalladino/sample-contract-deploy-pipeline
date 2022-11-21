@@ -14,32 +14,12 @@ jobs:
       INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Use node@14
-        uses: actions/setup-node@v1
-        with: {node-version: 14.x}
-
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - name: Node modules cache
-        uses: actions/cache@v2
-        id: yarn-cache
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          path: |
-            ${{ steps.yarn-cache-dir-path.outputs.dir }}
-            ~/.cache/node-gyp-cache
-          key: ${{ runner.os }}-yarn-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock')
-            }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ env.cache-name }}-
-        env:
-          cache-name: v1
-
-      - name: Install dependencies
-        run: yarn --frozen-lockfile
+          node-version: '14'
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
 
       - name: Compile contracts
         run: yarn build
@@ -50,63 +30,79 @@ jobs:
           name: artifacts
           path: artifacts
 
-  propose-upgrade:
-    name: Upgrade
+  test:
+    name: Unit Tests
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     needs: build
-    env:
-      # Hardhat connection settings (TODO: use a relayer!)
-      PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
-      INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
-
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Use node@14
-        uses: actions/setup-node@v1
-        with: {node-version: 14.x}
-
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - name: Node modules cache
-        uses: actions/cache@v2
-        id: yarn-cache
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          path: |
-            ${{ steps.yarn-cache-dir-path.outputs.dir }}
-            ~/.cache/node-gyp-cache
-          key: ${{ runner.os }}-yarn-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock')
-            }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ env.cache-name }}-
-        env:
-          cache-name: v1
+          node-version: '14'
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
+      - name: Run unit tests
+        run: yarn test
+        
 
-      - name: Install dependencies
-        run: yarn --frozen-lockfile
+  # propose-upgrade:
+  #   name: Upgrade
+  #   runs-on: ubuntu-20.04
+  #   timeout-minutes: 10
+  #   needs: build
+  #   env:
+  #     # Hardhat connection settings (TODO: use a relayer!)
+  #     PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
+  #     INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
 
-      - name: Get build artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: artifacts
-          path: artifacts
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Show downloaded build artifacts
-        run: ls -R artifacts
+  #     - name: Use node@14
+  #       uses: actions/setup-node@v1
+  #       with: {node-version: 14.x}
 
-      - name: Propose upgrade to new version
-        run: yarn hardhat run scripts/propose-upgrade.js --network goerli
-        env:
-          # URL used to reference the bytecode verification
-          WORKFLOW_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          # Address of the contract to upgrade
-          ADDRESS: "0x96F2B948d40006d9BaF546Ae507A7f27702128C1"
-          # Upgradeability owner
-          OWNER: "0xE3D450F1C50757fFB2b5ddE03A1A0d7Bc32F0153"
-          # API keys to Defender
-          DEFENDER_API_KEY: "${{ secrets.DEFENDER_API_KEY }}"
-          DEFENDER_API_SECRET: "${{ secrets.DEFENDER_API_SECRET }}"
+  #     - name: Get yarn cache directory path
+  #       id: yarn-cache-dir-path
+  #       run: echo "::set-output name=dir::$(yarn cache dir)"
+
+  #     - name: Node modules cache
+  #       uses: actions/cache@v2
+  #       id: yarn-cache
+  #       with:
+  #         path: |
+  #           ${{ steps.yarn-cache-dir-path.outputs.dir }}
+  #           ~/.cache/node-gyp-cache
+  #         key: ${{ runner.os }}-yarn-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock')
+  #           }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-yarn-${{ env.cache-name }}-
+  #       env:
+  #         cache-name: v1
+
+  #     - name: Install dependencies
+  #       run: yarn --frozen-lockfile
+
+  #     - name: Get build artifacts
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: artifacts
+  #         path: artifacts
+
+  #     - name: Show downloaded build artifacts
+  #       run: ls -R artifacts
+
+  #     - name: Propose upgrade to new version
+  #       run: yarn hardhat run scripts/propose-upgrade.js --network goerli
+  #       env:
+  #         # URL used to reference the bytecode verification
+  #         WORKFLOW_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+  #         # Address of the contract to upgrade
+  #         ADDRESS: "0x96F2B948d40006d9BaF546Ae507A7f27702128C1"
+  #         # Upgradeability owner
+  #         OWNER: "0xE3D450F1C50757fFB2b5ddE03A1A0d7Bc32F0153"
+  #         # API keys to Defender
+  #         DEFENDER_API_KEY: "${{ secrets.DEFENDER_API_KEY }}"
+  #         DEFENDER_API_SECRET: "${{ secrets.DEFENDER_API_SECRET }}"
           

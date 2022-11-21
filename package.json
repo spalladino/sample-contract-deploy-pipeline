@@ -4,19 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "yarn hardhat compile"
+    "build": "yarn hardhat compile",
+    "test": "yarn hardhat test"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.1.1",
     "@openzeppelin/contracts": "^4.7.3",
     "@openzeppelin/hardhat-defender": "1.8.0-rc.1",
     "@openzeppelin/hardhat-upgrades": "^1.20.0",
+    "chai": "^4.3.7",
     "dotenv": "^16.0.1",
     "ethers": "^5.7.0",
-    "hardhat": "^2.10.2"
+    "hardhat": "^2.10.2",
+    "mocha": "^10.1.0"
   },
   "dependencies": {
     "@openzeppelin/contracts-upgradeable": "^4.7.3"
