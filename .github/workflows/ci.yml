@@ -27,8 +27,10 @@ jobs:
       - name: Save build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: artifacts
-          path: artifacts
+          name: contract-artifacts
+          path: |
+            artifacts
+            cache/*.json
 
   test:
     name: Unit Tests
@@ -46,11 +48,10 @@ jobs:
       - name: Get build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: artifacts
-          path: artifacts
+          name: contract-artifacts
 
       - name: Show downloaded build artifacts
-        run: ls -R artifacts
+        run: ls -R artifacts cache
 
       - name: Run unit tests
         run: yarn test --no-compile
