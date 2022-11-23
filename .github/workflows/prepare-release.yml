@@ -117,6 +117,9 @@ jobs:
           INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
           PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
 
+      - name: Test commit
+        run: echo "TEST" > $RELEASE_PATH/test
+
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         if: always()
