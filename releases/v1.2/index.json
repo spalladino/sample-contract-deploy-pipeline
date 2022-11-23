@@ -1,0 +1,6 @@
+{
+  "network": "goerli",
+  "deploy": "run scripts/noop.js",
+  "verify": "run scripts/noop.js",
+  "finish": "run scripts/noop.js"
+}
