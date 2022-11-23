@@ -75,9 +75,8 @@ jobs:
     timeout-minutes: 20
     needs: test
     environment: production
-
-    # outputs:
-    #   deployed: ${{ steps.deployed.outputs.deployed }}
+    outputs:
+      deploy_commit: ${{ steps.commit.outputs.commit_hash }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -118,10 +117,11 @@ jobs:
           PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
 
       - name: Test commit
-        run: echo "TEST" > $RELEASE_PATH/test
+        run: echo "TEST2" > $RELEASE_PATH/test2
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
+        id: commit
         if: always()
         with:
           commit_message: Update registries of deployed addresses
@@ -145,7 +145,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ needs.deploy.outputs.deploy_commit || github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v3
         with:
           node-version: '14'
@@ -176,6 +176,9 @@ jobs:
       - name: Show env
         run: env
 
+      - name: Show data from commit in deploy
+        run: cat $RELEASE_PATH/test2
+
       - name: Verify contracts
         run: eval yarn hardhat --network $RELEASE_NETWORK $RELEASE_VERIFY_CMD
         env:
@@ -195,7 +198,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ needs.deploy.outputs.deploy_commit || github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v3
         with:
           node-version: '14'
