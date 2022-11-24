@@ -2,14 +2,14 @@ const { readFileSync, writeFileSync, existsSync } = require('fs');
 const { execSync } = require('child_process');
 const { task, types } = require('hardhat/config');
 
-const commit = execSync(`/usr/bin/git log -1 --format='%H'`).toString().trim();
 const addressBookPath = 'addresses.json';
 const releasePath = process.env.RELEASE_PATH;
 
 async function prepareUpgrade(hre, contract) { 
   console.error(`- Deploying new implementation for contract ${contract}`);
   const { upgrades, ethers } = hre;
-  
+
+  const commit = execSync(`/usr/bin/git log -1 --format='%H'`).toString().trim();
   const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
   const addressBook = JSON.parse(readFileSync(addressBookPath));
   const info = (addressBook[chainId.toString()] || {})[contract];

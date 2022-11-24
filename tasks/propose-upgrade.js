@@ -1,5 +1,5 @@
 const { AdminClient } = require('defender-admin-client');
-const { readFileSync, writeFileSync, existsSync } = require('fs');
+const { readFileSync, existsSync } = require('fs');
 const { fromChainId } = require('defender-base-client');
 
 const releasePath = process.env.RELEASE_PATH;
