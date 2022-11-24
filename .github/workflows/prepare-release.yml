@@ -115,6 +115,10 @@ jobs:
         env:
           INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
           PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
+          MULTISIG_ADDRESS: "${{ secrets.MULTISIG_ADDRESS }}"
+          ETHERSCAN_API_KEY: "${{ secrets.ETHERSCAN_API_KEY }}"
+          DEFENDER_API_KEY: "${{ secrets.DEFENDER_API_KEY }}"
+          DEFENDER_API_SECRET: "${{ secrets.DEFENDER_API_SECRET }}"
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -182,9 +186,13 @@ jobs:
         env:
           INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
           PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
+          MULTISIG_ADDRESS: "${{ secrets.MULTISIG_ADDRESS }}"
+          ETHERSCAN_API_KEY: "${{ secrets.ETHERSCAN_API_KEY }}"
+          DEFENDER_API_KEY: "${{ secrets.DEFENDER_API_KEY }}"
+          DEFENDER_API_SECRET: "${{ secrets.DEFENDER_API_SECRET }}"
 
-  finish-deploy:
-    name: Finish deployment
+  finish-release:
+    name: Finish release
     if: startsWith(github.head_ref, 'release/')
     runs-on: ubuntu-20.04
     timeout-minutes: 20
@@ -228,8 +236,12 @@ jobs:
       - name: Show env
         run: env
 
-      - name: Finish deployment
+      - name: Complete release
         run: eval yarn hardhat --network $RELEASE_NETWORK $RELEASE_FINISH_CMD
         env:
           INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
           PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
+          MULTISIG_ADDRESS: "${{ secrets.MULTISIG_ADDRESS }}"
+          ETHERSCAN_API_KEY: "${{ secrets.ETHERSCAN_API_KEY }}"
+          DEFENDER_API_KEY: "${{ secrets.DEFENDER_API_KEY }}"
+          DEFENDER_API_SECRET: "${{ secrets.DEFENDER_API_SECRET }}"
