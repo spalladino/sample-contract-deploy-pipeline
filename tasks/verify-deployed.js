@@ -31,6 +31,6 @@ async function main(args, hre) {
 
 task('verify-deployed')
   .addOptionalParam('input', 'JSON file where to load the addresses of the implementations to verify (defaults to $RELEASE_PATH/deployed.json if env var is set)')
-  .addOptionalParam('reference-url', 'URL to link to for artifact verification (defaults to $ARTIFACT_REFERENCE_URL the remote.origin.url of the repository)')
+  .addOptionalParam('referenceUrl', 'URL to link to for artifact verification (defaults to $ARTIFACT_REFERENCE_URL the remote.origin.url of the repository)')
   .setDescription('Verifies deployed implementations in Etherscan and Defender')
   .setAction(main);
