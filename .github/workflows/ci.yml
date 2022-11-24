@@ -9,8 +9,6 @@ jobs:
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     env:
-      # Hardhat connection settings (TODO: use a relayer!)
-      PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
       INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
 
     steps:

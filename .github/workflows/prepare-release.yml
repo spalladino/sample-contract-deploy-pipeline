@@ -1,0 +1,235 @@
+---
+name: Prepare release
+
+on:
+  pull_request:
+    branches:
+      - 'master'
+      - 'release/**'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build release
+    if: startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    env:
+      INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
+
+      - name: Compile contracts
+        run: yarn build
+
+      - name: Save build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: contract-artifacts
+          path: |
+            artifacts
+            cache/*.json
+
+  test:
+    name: Test release
+    if: startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
+
+      - name: Get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: contract-artifacts
+
+      - name: Show downloaded build artifacts
+        run: ls -R artifacts cache
+
+      - name: Run unit tests
+        run: yarn test --no-compile
+
+  deploy:
+    name: Deploy contracts
+    if: startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+    needs: test
+    environment: production
+    outputs:
+      deploy_commit: ${{ steps.commit.outputs.commit_hash }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
+
+      - name: Get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: contract-artifacts
+
+      - name: Show downloaded build artifacts
+        run: ls -R artifacts cache
+
+      - name: Set environment variables for the release
+        run: |
+          version=${BRANCH_NAME#release\/}
+          path=releases/v$version
+          network=$(jq -r .network $path/index.json)
+          echo "RELEASE_VERSION=$version" >> $GITHUB_ENV
+          echo "RELEASE_PATH=$path" >> $GITHUB_ENV
+          echo "RELEASE_NETWORK=$network" >> $GITHUB_ENV
+          echo "RELEASE_DEPLOY_CMD=$(jq -r '.deploy' $path/index.json)" >> $GITHUB_ENV
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+
+      - name: Show env
+        run: env
+
+      - name: Deploy contracts
+        run: eval yarn hardhat --network $RELEASE_NETWORK $RELEASE_DEPLOY_CMD
+        env:
+          INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
+          PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        id: commit
+        if: always()
+        with:
+          commit_message: Update registries of deployed addresses
+          file_pattern: '.openzeppelin/ releases/'
+          skip_checkout: true
+
+      # - name: Output deployed addresses
+      #   id: deployed
+      #   run: |
+      #     echo "deployed=$(cat $RELEASE_PATH/deployed)" >> $GITHUB_OUTPUT
+
+  verify:
+    name: Verify contracts
+    if: startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+    needs: deploy
+    # TODO: run if there is a verify_cmd
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.deploy.outputs.deploy_commit || github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
+
+      - name: Get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: contract-artifacts
+
+      - name: Show downloaded build artifacts
+        run: ls -R artifacts cache
+
+      - name: Set environment variables for the release
+        run: |
+          version=${BRANCH_NAME#release\/}
+          path=releases/v$version
+          network=$(jq -r .network $path/index.json)
+          echo "RELEASE_VERSION=$version" >> $GITHUB_ENV
+          echo "RELEASE_PATH=$path" >> $GITHUB_ENV
+          echo "RELEASE_NETWORK=$network" >> $GITHUB_ENV
+          echo "RELEASE_DEPLOY_CMD=$(jq -r '.deploy' $path/index.json)" >> $GITHUB_ENV
+          echo "RELEASE_VERIFY_CMD=$(jq -r '.verify' $path/index.json)" >> $GITHUB_ENV
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+
+      - name: Show env
+        run: env
+
+      - name: Show data from commit in deploy
+        run: cat $RELEASE_PATH/test2
+
+      - name: Verify contracts
+        run: eval yarn hardhat --network $RELEASE_NETWORK $RELEASE_VERIFY_CMD
+        env:
+          INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
+          PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"
+
+  finish-deploy:
+    name: Finish deployment
+    if: startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+    environment: production
+    needs: deploy
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.deploy.outputs.deploy_commit || github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
+
+      - name: Get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: contract-artifacts
+
+      - name: Show downloaded build artifacts
+        run: ls -R artifacts cache
+
+      - name: Set environment variables for the release
+        run: |
+          version=${BRANCH_NAME#release\/}
+          path=releases/v$version
+          network=$(jq -r .network $path/index.json)
+          echo "RELEASE_VERSION=$version" >> $GITHUB_ENV
+          echo "RELEASE_PATH=$path" >> $GITHUB_ENV
+          echo "RELEASE_NETWORK=$network" >> $GITHUB_ENV
+          echo "RELEASE_DEPLOY_CMD=$(jq -r '.deploy' $path/index.json)" >> $GITHUB_ENV
+          echo "RELEASE_VERIFY_CMD=$(jq -r '.verify' $path/index.json)" >> $GITHUB_ENV
+          echo "RELEASE_FINISH_CMD=$(jq -r '.finish' $path/index.json)" >> $GITHUB_ENV
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+
+      - name: Show env
+        run: env
+
+      - name: Finish deployment
+        run: eval yarn hardhat --network $RELEASE_NETWORK $RELEASE_FINISH_CMD
+        env:
+          INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
+          PRIVATE_KEY: "${{ secrets.PRIVATE_KEY }}"

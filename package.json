@@ -21,7 +21,8 @@
     "dotenv": "^16.0.1",
     "ethers": "^5.7.0",
     "hardhat": "^2.10.2",
-    "mocha": "^10.1.0"
+    "mocha": "^10.1.0",
+    "promise-retry": "^2.0.1"
   },
   "dependencies": {
     "@openzeppelin/contracts-upgradeable": "^4.7.3"
