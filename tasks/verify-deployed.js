@@ -1,11 +1,12 @@
+const { execSync } = require('child_process');
 const { readFileSync, existsSync } = require('fs');
 
-const releasePath = process.env.RELEASE_PATH;
-const workflowUrl = process.env.ARTIFACT_REFERENCE_URL || execSync(`git config --get remote.origin.url`).toString().trim();
-
 async function main(args, hre) {
+  const releasePath = process.env.RELEASE_PATH;
+  const workflowUrl = args.referenceUrl || process.env.ARTIFACT_REFERENCE_URL || execSync(`git config --get remote.origin.url`).toString().trim();
   const input = args.output || (releasePath ? `${releasePath}/deployed.json` : null);
   const deployed = input && existsSync(input) ? JSON.parse(readFileSync(input)) : {};
+  
   const { defender } = hre;
 
   for (const [name, address] of Object.entries(deployed)) {
