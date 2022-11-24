@@ -1,7 +1,15 @@
 require('dotenv').config();
+
 require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
 require('@openzeppelin/hardhat-defender');
+
+require('./tasks/prepare-upgrade');
+require('./tasks/verify-deployed');
+require('./tasks/propose-upgrade');
+require('./tasks/noop');
+
+console.log(process.env.ETHERSCAN_API_KEY);
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -9,6 +17,9 @@ module.exports = {
   defender: {
     apiKey: process.env.DEFENDER_API_KEY,
     apiSecret: process.env.DEFENDER_API_SECRET,
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
   networks: {
     goerli: {
