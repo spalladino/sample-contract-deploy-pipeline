@@ -1,0 +1,6 @@
+{
+  "network": "goerli",
+  "deploy": "prepare-upgrade Box",
+  "verify": "verify-deployed",
+  "finish": "propose-upgrade"
+}
