@@ -66,7 +66,7 @@ jobs:
         run: yarn test --no-compile
 
   prepare:
-    name: Parse release info
+    name: Prepare release
     if: startsWith(github.head_ref, 'release/')
     runs-on: ubuntu-22.04
     needs: test
@@ -75,7 +75,6 @@ jobs:
       release_path: ${{ steps.parse.outputs.release_path }}
       release_network: ${{ steps.parse.outputs.release_network }}
       release_title: ${{ steps.parse.outputs.release_title }}
-      release_description: ${{ steps.parse.outputs.release_description }}
       release_multisig: ${{ steps.parse.outputs.release_multisig }}
       release_deploy_cmd: ${{ steps.parse.outputs.release_deploy_cmd }}
       release_verify_cmd: ${{ steps.parse.outputs.release_verify_cmd }}
@@ -105,7 +104,7 @@ jobs:
           BRANCH_NAME: ${{ github.head_ref }}
       - name: Output summary
         run: |
-          echo "# $TITLE" >> $GITHUB_STEP_SUMMARY
+          echo "## $TITLE" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Network $NETWORK**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -225,6 +224,4 @@ jobs:
           DEFENDER_API_KEY: "${{ secrets.DEFENDER_API_KEY }}"
           DEFENDER_API_SECRET: "${{ secrets.DEFENDER_API_SECRET }}"
           RELEASE_PATH: "${{ needs.prepare.outputs.release_path }}"
-          RELEASE_TITLE: "${{ needs.prepare.outputs.release_title }}"
-          RELEASE_DESCRIPTION: "${{ needs.prepare.outputs.release_description }}"
           MULTISIG_ADDRESS: "${{ needs.prepare.outputs.release_multisig }}"
