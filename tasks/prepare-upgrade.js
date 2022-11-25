@@ -4,6 +4,13 @@ const { task, types } = require('hardhat/config');
 
 const addressBookPath = 'addresses.json';
 const releasePath = process.env.RELEASE_PATH;
+const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+
+function getEtherscanDomain(hre) {
+  const network = hre.network.name;
+  if (network === `mainnet`) return 'etherscan.io';
+  return `${network}.etherscan.io`;
+}
 
 async function prepareUpgrade(hre, contract) { 
   console.error(`- Deploying new implementation for contract ${contract}`);
@@ -40,7 +47,13 @@ async function main(args, hre) {
       deployed[contract] = implementation;
     } 
   } finally {
-    if (output) writeFileSync(output, JSON.stringify(deployed, null, 2));
+    if (output) {
+      writeFileSync(output, JSON.stringify(deployed, null, 2));
+    }
+    if (summaryPath && Object.entries(deployed).length > 0) {
+      const list = Object.entries(deployed).map(([name, impl]) => `- ${name} at [${impl}](https://${getEtherscanDomain(hre)}/address/${impl})`);
+      writeFileSync(summaryPath, `## Deployments\n\n${list.join('\n')}\n`)
+    }
   }
 }
 

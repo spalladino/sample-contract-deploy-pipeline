@@ -1,0 +1,8 @@
+title: Upgrade to v1.3
+network: goerli
+deploy: prepare-upgrade Box
+verify: verify-deployed
+finish: propose-upgrade
+description: |
+  Upgrades Box contract to v1.3
+  Bumps version identifier in the contract
