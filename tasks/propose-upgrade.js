@@ -1,10 +1,11 @@
 const { AdminClient } = require('defender-admin-client');
-const { readFileSync, existsSync } = require('fs');
+const { writeFileSync, readFileSync, existsSync } = require('fs');
 const { fromChainId } = require('defender-base-client');
 
 const releasePath = process.env.RELEASE_PATH;
 const proxyAbi = [{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"}];
 const addressBookPath = 'addresses.json';
+const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 
 async function main(args, hre) {
   const { ethers, config } = hre;
@@ -37,10 +38,13 @@ async function main(args, hre) {
 
   console.error(`Steps:\n`, JSON.stringify(steps, null, 2));
 
+  const title = process.env.RELEASE_TITLE || 'Upgrade';
+  const description = process.env.RELEASE_DESCRIPTION || contracts.map(c => `${c.name} at ${c.address} to ${c.newImplementation}`.join('\n'));
+
   const proposal = await defenderAdmin.createProposal({
     contract: contracts,
-    title: 'Upgrade',
-    description: 'Upgrade it is',
+    title,
+    description,
     type: 'batch',
     via: multisig,
     viaType: 'Gnosis Safe',
@@ -49,6 +53,9 @@ async function main(args, hre) {
   })
 
   console.error(`Created upgrade proposal for multisig ${multisig} at ${proposal.url}`);
+  if (summaryPath) {
+    writeFileSync(summaryPath, `## Approval\n\nRequired approval by multisig ${multisig} signers [here](${proposal.url})`);
+  }
 }
 
 task('propose-upgrade')
