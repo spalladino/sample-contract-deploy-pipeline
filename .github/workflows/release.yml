@@ -93,12 +93,14 @@ jobs:
           echo "release_version=$version" >> $GITHUB_OUTPUT
           echo "release_path=$path" >> $GITHUB_OUTPUT
           echo "release_network=$network" >> $GITHUB_OUTPUT
-          echo "release_title=$(yq -r '.title // ""' $path/index.yml)" >> $GITHUB_OUTPUT
-          echo "release_description=$(yq -r '.description // ""' $path/index.yml)" >> $GITHUB_OUTPUT
           echo "release_multisig=$(jq -r .$network multisigs.json)" >> $GITHUB_OUTPUT
           echo "release_deploy_cmd=$(yq -r '.deploy // ""' $path/index.yml)" >> $GITHUB_OUTPUT
           echo "release_verify_cmd=$(yq -r '.verify // ""' $path/index.yml)" >> $GITHUB_OUTPUT
           echo "release_finish_cmd=$(yq -r '.finish // ""' $path/index.yml)" >> $GITHUB_OUTPUT
+          echo "release_title=$(yq -r '.title // ""' $path/index.yml)" >> $GITHUB_OUTPUT
+          echo "release_description<<DESCRIPTION_DELIMITER" >> $GITHUB_OUTPUT
+          echo "$(yq -r '.description // ""' $path/index.yml)" >> $GITHUB_OUTPUT
+          echo "DESCRIPTION_DELIMITER" >> $GITHUB_OUTPUT
         env:
           BRANCH_NAME: ${{ github.head_ref }}
       - name: Output summary
