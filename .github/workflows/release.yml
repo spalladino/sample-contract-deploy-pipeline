@@ -159,7 +159,7 @@ jobs:
 
   verify:
     name: Verify contracts
-    if: startsWith(github.head_ref, 'release/') && needs.prepare.outputs.release_verify_cmd != ""
+    if: "startsWith(github.head_ref, 'release/') && needs.prepare.outputs.release_verify_cmd != ''"
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     needs: deploy
@@ -190,7 +190,7 @@ jobs:
 
   finish-release:
     name: Finish release
-    if: startsWith(github.head_ref, 'release/') && needs.prepare.outputs.release_finish_cmd != ""
+    if: "startsWith(github.head_ref, 'release/') && needs.prepare.outputs.release_finish_cmd != ''"
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     environment: production
