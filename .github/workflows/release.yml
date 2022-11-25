@@ -104,7 +104,7 @@ jobs:
         env:
           BRANCH_NAME: ${{ github.head_ref }}
       - name: Output summary
-        run:
+        run: |
           echo "# $TITLE" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Network $NETWORK**" >> $GITHUB_STEP_SUMMARY
@@ -164,7 +164,9 @@ jobs:
     if: "startsWith(github.head_ref, 'release/') && needs.prepare.outputs.release_verify_cmd != ''"
     runs-on: ubuntu-22.04
     timeout-minutes: 20
-    needs: deploy
+    needs: 
+      - prepare
+      - deploy
     steps:
       - uses: actions/checkout@v3
         with:
@@ -196,7 +198,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     environment: production
-    needs: deploy
+    needs:
+      - prepare
+      - deploy
     steps:
       - uses: actions/checkout@v3
         with:
