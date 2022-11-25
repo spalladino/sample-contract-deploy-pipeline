@@ -39,7 +39,7 @@ async function main(args, hre) {
 
   console.error(`Steps:\n`, JSON.stringify(steps, null, 2));
 
-  const releaseInfo = releasePath ? yaml.parse(fs.readFileSync(`${releasePath}/index.yml`)) : {};
+  const releaseInfo = releasePath ? yaml.parse(readFileSync(`${releasePath}/index.yml`)) : {};
   const title = releaseInfo['title'] || 'Upgrade';
   const description = releaseInfo['description'] || contracts.map(c => `${c.name} at ${c.address} to ${c.newImplementation}`).join('\n');
 

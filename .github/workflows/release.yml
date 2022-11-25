@@ -148,6 +148,7 @@ jobs:
           DEFENDER_API_KEY: "${{ secrets.DEFENDER_API_KEY }}"
           DEFENDER_API_SECRET: "${{ secrets.DEFENDER_API_SECRET }}"
           RELEASE_PATH: "${{ needs.prepare.outputs.release_path }}"
+          MULTISIG_ADDRESS: "${{ needs.prepare.outputs.release_multisig }}"
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
