@@ -191,6 +191,7 @@ jobs:
           DEFENDER_API_KEY: "${{ secrets.DEFENDER_API_KEY }}"
           DEFENDER_API_SECRET: "${{ secrets.DEFENDER_API_SECRET }}"
           RELEASE_PATH: "${{ needs.prepare.outputs.release_path }}"
+          ARTIFACT_REFERENCE_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
   finish-release:
     name: Finish release
