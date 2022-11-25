@@ -8,6 +8,7 @@ async function main(args, hre) {
   const deployed = input && existsSync(input) ? JSON.parse(readFileSync(input)) : {};
   
   const { defender } = hre;
+  const errs = [];
 
   for (const [name, address] of Object.entries(deployed)) {
     console.error(`\nVerifying source for ${name} at ${address} on Etherscan`);
@@ -17,15 +18,25 @@ async function main(args, hre) {
       if (err.message === 'Contract source code already verified') {
         console.error(`Source code already verified`);
       } else {
-        throw err;
+        console.error(`Error verifying source code: ${err.message}`);
+        errs.push([name, err]);
       }
     }
   }
 
   for (const [name, address] of Object.entries(deployed)) {
     console.error(`\nVerifying artifact for ${name} at ${address} on Defender`);
-    const response = await defender.verifyDeployment(address, name, workflowUrl);
-    console.error(`Bytecode match for ${name} is ${response.matchType}`);
+    try {
+      const response = await defender.verifyDeployment(address, name, workflowUrl);
+      console.error(`Bytecode match for ${name} is ${response.matchType}`);
+    } catch (err) {
+      console.error(`Error verifying artifact: ${err.message}`);
+      errs.push([name, err]);
+    }
+  }
+
+  if (errs.length > 0) {
+    throw new Error(`Some verifications failed:\n${errs.map(([name, err]) => ` ${name}: ${err.message}`)}`);
   }
 }
 
