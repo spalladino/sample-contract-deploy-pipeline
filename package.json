@@ -22,7 +22,8 @@
     "ethers": "^5.7.0",
     "hardhat": "^2.10.2",
     "mocha": "^10.1.0",
-    "promise-retry": "^2.0.1"
+    "promise-retry": "^2.0.1",
+    "yaml": "^2.1.3"
   },
   "dependencies": {
     "@openzeppelin/contracts-upgradeable": "^4.7.3"

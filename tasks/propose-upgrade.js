@@ -1,6 +1,7 @@
 const { AdminClient } = require('defender-admin-client');
 const { writeFileSync, readFileSync, existsSync } = require('fs');
 const { fromChainId } = require('defender-base-client');
+const yaml = require('yaml')
 
 const releasePath = process.env.RELEASE_PATH;
 const proxyAbi = [{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"}];
@@ -38,8 +39,9 @@ async function main(args, hre) {
 
   console.error(`Steps:\n`, JSON.stringify(steps, null, 2));
 
-  const title = process.env.RELEASE_TITLE || 'Upgrade';
-  const description = process.env.RELEASE_DESCRIPTION || contracts.map(c => `${c.name} at ${c.address} to ${c.newImplementation}`.join('\n'));
+  const releaseInfo = releasePath ? yaml.parse(fs.readFileSync(`${releasePath}/index.yml`)) : {};
+  const title = releaseInfo['title'] || 'Upgrade';
+  const description = releaseInfo['description'] || contracts.map(c => `${c.name} at ${c.address} to ${c.newImplementation}`).join('\n');
 
   const proposal = await defenderAdmin.createProposal({
     contract: contracts,
