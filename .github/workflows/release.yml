@@ -75,7 +75,9 @@ jobs:
       release_path: ${{ steps.parse.outputs.release_path }}
       release_network: ${{ steps.parse.outputs.release_network }}
       release_title: ${{ steps.parse.outputs.release_title }}
+      release_description: ${{ steps.parse.outputs.release_description }}
       release_multisig: ${{ steps.parse.outputs.release_multisig }}
+      release_audited: ${{ steps.parse.outputs.release_audited }}
       release_deploy_cmd: ${{ steps.parse.outputs.release_deploy_cmd }}
       release_verify_cmd: ${{ steps.parse.outputs.release_verify_cmd }}
       release_finish_cmd: ${{ steps.parse.outputs.release_finish_cmd }}
@@ -83,7 +85,8 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: Set environment variables for the release
+      
+      - name: Parse release info
         id: parse
         run: |
           version=${BRANCH_NAME#release\/}
@@ -96,17 +99,20 @@ jobs:
           echo "release_deploy_cmd=$(yq -r '.deploy // ""' $path/index.yml)" >> $GITHUB_OUTPUT
           echo "release_verify_cmd=$(yq -r '.verify // ""' $path/index.yml)" >> $GITHUB_OUTPUT
           echo "release_finish_cmd=$(yq -r '.finish // ""' $path/index.yml)" >> $GITHUB_OUTPUT
+          echo "release_audited=$(yq -r '.audited // ""' $path/index.yml)" >> $GITHUB_OUTPUT
           echo "release_title=$(yq -r '.title // ""' $path/index.yml)" >> $GITHUB_OUTPUT
           echo "release_description<<DESCRIPTION_DELIMITER" >> $GITHUB_OUTPUT
           echo "$(yq -r '.description // ""' $path/index.yml)" >> $GITHUB_OUTPUT
           echo "DESCRIPTION_DELIMITER" >> $GITHUB_OUTPUT
         env:
           BRANCH_NAME: ${{ github.head_ref }}
+      
       - name: Output summary
         run: |
           echo "## $TITLE" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Network $NETWORK**" >> $GITHUB_STEP_SUMMARY
+          echo "**Network:** $NETWORK" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** $NETWORK" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "$DESCRIPTION" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -114,6 +120,26 @@ jobs:
           TITLE: ${{ steps.parse.outputs.release_title }}
           DESCRIPTION: ${{ steps.parse.outputs.release_description }}
           NETWORK: ${{ steps.parse.outputs.release_network }}
+          COMMIT: ${{ github.event.pull_request.head.sha }}
+      
+      - name: Output audit info
+        if: 'steps.parse.release_audited != ""'
+        run: |
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "### Audit" >> $GITHUB_STEP_SUMMARY
+          echo "Audited contracts at commit [$AUDIT_COMMIT]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$AUDIT_COMMIT) :detective:" >> $GITHUB_STEP_SUMMARY
+          audit_diff="$(git diff $AUDIT_COMMIT *.sol)"
+          if [[ -z $AUDIT_DIFF ]]; then
+            echo "Contracts have not been modified since audit :heavy_check_mark:" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Contract changes since audit :warning" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "```diff" >> $GITHUB_STEP_SUMMARY
+            echo "$AUDIT_DIFF" >> $GITHUB_STEP_SUMMARY
+            echo "```" >> $GITHUB_STEP_SUMMARY
+          fi
+        env:
+          AUDIT_COMMIT: ${{ steps.parse.outputs.release_audited }}
 
   deploy:
     name: Deploy contracts
