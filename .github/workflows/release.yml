@@ -133,11 +133,11 @@ jobs:
           if [[ -z $audit_diff ]]; then
             echo "Contracts have not been modified since audit :heavy_check_mark:" >> $GITHUB_STEP_SUMMARY
           else
-            echo "Contract changes since audit :warning" >> $GITHUB_STEP_SUMMARY
+            echo "Contract changes since audit :warning:" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "```diff" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`diff" >> $GITHUB_STEP_SUMMARY
             echo "$audit_diff" >> $GITHUB_STEP_SUMMARY
-            echo "```" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
         env:
           AUDIT_COMMIT: ${{ steps.parse.outputs.release_audited }}
