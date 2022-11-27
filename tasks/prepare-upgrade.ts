@@ -53,7 +53,7 @@ async function main(args: { contracts: string[] }, hre: HRE) {
   } finally {
     const deployed = getReleaseDeploys();
     if (summaryPath && deployed && Object.entries(deployed).length > 0) {
-      const list = Object.entries(deployed).map(([name, info]) => `- ${name} at [${info.implementation}](https://${getEtherscanDomain(hre)}/address/${info.implementation})`);
+      const list = Object.entries(deployed).map(([name, info]) => `- ${name} at [\`${info.implementation}\`](https://${getEtherscanDomain(hre)}/address/${info.implementation})`);
       appendFileSync(summaryPath, `## Implementation contracts deployed\n\n${list.join('\n')}\n`);
     }
   }
