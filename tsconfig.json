@@ -1,0 +1,10 @@
+{
+  "extends": "@tsconfig/node14/tsconfig.json",
+  "include": ["tasks/**/*.ts", "hardhat.config.ts"],
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "files": [
+  ]
+}

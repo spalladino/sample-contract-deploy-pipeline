@@ -1,37 +1,39 @@
-const { AdminClient } = require('defender-admin-client');
-const { writeFileSync, readFileSync, existsSync } = require('fs');
-const { fromChainId } = require('defender-base-client');
-const { getReleaseInfo, getReleaseDeploys } = require('./utils');
-const { pickBy } = require('lodash');
+import { AdminClient } from 'defender-admin-client';
+import { fromChainId } from 'defender-base-client';
+import { writeFileSync } from 'fs';
+import { task } from 'hardhat/config';
+import { HardhatRuntimeEnvironment as HRE } from 'hardhat/types';
+import { pickBy } from 'lodash';
+import { getAddressBookEntry, getReleaseDeploys, getReleaseInfo } from './utils';
 
-const releasePath = process.env.RELEASE_PATH;
 const proxyAbi = [{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"}];
 const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 
-async function main(args, hre) {
+async function main(args: { multisig?: string }, hre: HRE) {
   const { ethers, config } = hre;
   const multisig = args.multisig || process.env.MULTISIG_ADDRESS;
   const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
-  const deployed = pickBy(getReleaseDeploys(), c => c.implementation);
+  const network = fromChainId(chainId)!;
+  const deployed = pickBy(getReleaseDeploys(), c => !!c.implementation);
 
   console.error(`Creating proposal for upgrade in Defender for contracts ${Object.keys(deployed).join(', ')}`);
-  const defenderAdmin = new AdminClient(config.defender);
+  const defenderAdmin = new AdminClient(config.defender!);
 
-  const contracts = await Promise.all(Object.entries(deployed).map(async ([name, address]) => ({
+  const contracts = await Promise.all(Object.entries(deployed).map(async ([name, { implementation }]) => ({
     name, 
     network,
-    address: addressBook[name].address,
-    abi: JSON.stringify([...(await hre.artifacts.readArtifact(name)).abi, ...proxyAbi]),
-    newImplementation: address,
+    address: getAddressBookEntry(chainId, name).address,
+    abi: JSON.stringify([...await hre.artifacts.readArtifact(name).then(a => a.abi), ...proxyAbi]),
+    newImplementation: implementation!,
   })));
 
   console.error(`Contracts:\n${contracts.map(c => `- ${c.name} at ${c.address} to ${c.newImplementation}`).join('\n')}`);
   
-  const steps = contracts.map(({ name, address, network, newImplementation }) => ({
+  const steps = contracts.map(({ address, network, newImplementation }) => ({
     contractId: `${network}-${address}`,
     targetFunction: proxyAbi[0],
     functionInputs: [newImplementation],
-    type: 'custom',
+    type: 'custom' as const,
   }));
 
   console.error(`Steps:\n`, JSON.stringify(steps, null, 2));
