@@ -1,10 +1,8 @@
-import { appendFileSync } from 'fs';
 import { execSync } from 'child_process';
+import { appendFileSync } from 'fs';
 import { task, types } from 'hardhat/config';
-import { getAddressBookEntry, writeDeploy, getReleaseDeploys } from './utils';
 import { HardhatRuntimeEnvironment as HRE } from 'hardhat/types';
-import { DeployImplementationResponse } from '@openzeppelin/hardhat-upgrades/src/deploy-implementation';
-import { getContractAddress } from '@ethersproject/address';
+import { getReleaseDeploys, writeDeploy } from './utils';
 
 const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 
@@ -12,12 +10,6 @@ function getEtherscanDomain(hre: HRE) {
   const network = hre.network.name;
   if (network === `mainnet`) return 'etherscan.io';
   return `${network}.etherscan.io`;
-}
-
-function getNewImplementation(prepareUpgradeResult: DeployImplementationResponse): string {
-  return typeof prepareUpgradeResult === 'string'
-    ? prepareUpgradeResult
-    : getContractAddress(prepareUpgradeResult);
 }
 
 async function deploy(hre: HRE, chainId: number, contract: string) { 
