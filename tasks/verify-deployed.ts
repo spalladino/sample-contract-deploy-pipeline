@@ -1,7 +1,9 @@
-const { execSync } = require('child_process');
-const { getReleaseDeploys } = require('./utils');
+import { execSync } from 'child_process';
+import { task } from 'hardhat/config';
+import { HardhatRuntimeEnvironment as HRE } from 'hardhat/types';
+import { getReleaseDeploys } from './utils';
 
-async function main(args, hre) {
+async function main(args: { referenceUrl?: string }, hre: HRE) {
   const workflowUrl = args.referenceUrl || process.env.ARTIFACT_REFERENCE_URL || execSync(`git config --get remote.origin.url`).toString().trim();
   const deployed = getReleaseDeploys() || {};
   
@@ -16,7 +18,7 @@ async function main(args, hre) {
     console.error(`\nVerifying source for ${name} at ${addressToVerify} on Etherscan`);
     try {
       await hre.run("verify:verify", { address: addressToVerify, noCompile: true });
-    } catch(err) {
+    } catch(err: any) {
       if (err.message === 'Contract source code already verified') {
         console.error(`Source code already verified`);
       } else {
@@ -33,7 +35,7 @@ async function main(args, hre) {
     try {
       const response = await defender.verifyDeployment(addressToVerify, name, workflowUrl);
       console.error(`Bytecode match for ${name} is ${response.matchType}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error(`Error verifying artifact: ${err.message}`);
       errs.push([name, err]);
     }
