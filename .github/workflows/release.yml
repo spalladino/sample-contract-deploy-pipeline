@@ -222,7 +222,7 @@ jobs:
 
   finish-release:
     name: Finish release
-    if: "startsWith(github.head_ref, 'release/') && needs.prepare.outputs.release_finish_cmd != ''"
+    if: "startsWith(github.head_ref, 'release/')"
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     environment: production
@@ -245,6 +245,7 @@ jobs:
           name: contract-artifacts
 
       - name: Complete release
+        if: "needs.prepare.outputs.release_finish_cmd != ''"
         run: eval yarn hardhat --network ${{ needs.prepare.outputs.release_network }} ${{ needs.prepare.outputs.release_finish_cmd }}
         env:
           INFURA_PROJECT_ID: "${{ secrets.INFURA_PROJECT_ID }}"
@@ -254,3 +255,17 @@ jobs:
           DEFENDER_API_SECRET: "${{ secrets.DEFENDER_API_SECRET }}"
           RELEASE_PATH: "${{ needs.prepare.outputs.release_path }}"
           MULTISIG_ADDRESS: "${{ needs.prepare.outputs.release_multisig }}"
+
+      - name: Link to run in PR
+        uses: actions/github-script@v6
+        env:
+          RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `[**Release finished**](${process.env.RUN_URL})`,
+            });
+          
