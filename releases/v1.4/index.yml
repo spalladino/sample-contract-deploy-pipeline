@@ -1,0 +1,7 @@
+title: Deploy Greeter
+network: goerli
+deploy: run $RELEASE_PATH/deploy.js
+verify: verify-deployed
+description: |
+  Create upgradeable Greeter contract.
+  A new contract that can greet.
