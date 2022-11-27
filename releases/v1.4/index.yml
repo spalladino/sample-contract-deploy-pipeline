@@ -1,6 +1,6 @@
 title: Deploy Greeter
 network: goerli
-deploy: run $RELEASE_PATH/deploy.js
+deploy: run $RELEASE_PATH/deploy.ts
 verify: verify-deployed
 description: |
   Create upgradeable Greeter contract.
