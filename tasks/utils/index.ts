@@ -3,7 +3,7 @@ import { parse as parseYaml } from 'yaml';
 
 const RELEASE_PATH = process.env.RELEASE_PATH;
 const DEPLOYED_PATH = RELEASE_PATH ? `${RELEASE_PATH}/deployed.json` : null;
-const RELEASE_INFO_PATH = RELEASE_PATH ? `${RELEASE_PATH}/info.yml` : null;
+const RELEASE_INFO_PATH = RELEASE_PATH ? `${RELEASE_PATH}/index.yml` : null;
 const ADDRESS_BOOK_PATH = `addresses.json`;
 
 export type ContractDeploymentInfo = {
