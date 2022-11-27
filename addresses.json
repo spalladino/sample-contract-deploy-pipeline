@@ -2,7 +2,7 @@
   "5": {
     "Box": {
       "address": "0x22431A9012cC3Fa9Ba7643e16275e8565Ff3a0BA",
-      "implementation": "0x02C0AE8e78843B8c5389b57077EBD26632206Fe0"
+      "implementation": "0x94356DBed7e3523aCA0e3cB4fBd8dB0fE68bD66F"
     },
     "Greeter": {
       "address": "0x2dE4b51615E2d732905131e90201ca362F1789Fb",
