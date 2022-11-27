@@ -52,9 +52,9 @@ The deployment workflow autogenerates a [summary](https://github.com/spalladino/
 >      function _authorizeUpgrade(address newImplementation)
 > ```
 > 
-> ### Implementation contracts deployed
+> ## Implementation contracts deployed
 > 
-> - Box at [`0x02C0AE8e78843B8c5389b57077EBD26632206Fe0`](https://goerli.etherscan.io/address/> 0x02C0AE8e78843B8c5389b57077EBD26632206Fe0)
+> - Box at [`0x02C0AE8e78843B8c5389b57077EBD26632206Fe0`](https://goerli.etherscan.io/address/0x02C0AE8e78843B8c5389b57077EBD26632206Fe0)
 
 The upgrade proposal is created in OpenZeppelin Defender:
 
