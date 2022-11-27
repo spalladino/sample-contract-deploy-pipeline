@@ -1,6 +1,6 @@
 title: Deploy Greeter
 network: goerli
-deploy: deploy-proxy Greeter "Hello world" $MULTISIG_ADDRESS
+deploy: deploy-proxy Greeter HelloWorld $MULTISIG_ADDRESS
 verify: verify-deployed
 description: |
   Create upgradeable Greeter contract.
