@@ -1,7 +1,7 @@
 const { appendFileSync } = require('fs');
 const { execSync } = require('child_process');
 const { task, types } = require('hardhat/config');
-const { getContractInfo, writeDeploy } = require('./utils');
+const { getContractInfo, writeDeploy, getReleaseDeploys() } = require('./utils');
 
 const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 
