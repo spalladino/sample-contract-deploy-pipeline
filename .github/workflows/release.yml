@@ -128,12 +128,12 @@ jobs:
         run: |
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "### Audit" >> $GITHUB_STEP_SUMMARY
-          echo "Audited contracts at commit [$AUDIT_COMMIT]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/tree/$AUDIT_COMMIT) :detective:" >> $GITHUB_STEP_SUMMARY
+          echo "Audited contracts at commit [\`$AUDIT_COMMIT\`]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/tree/$AUDIT_COMMIT) :detective:" >> $GITHUB_STEP_SUMMARY
           audit_diff="$(git diff $AUDIT_COMMIT *.sol)"
           if [[ -z $audit_diff ]]; then
             echo "Contracts have not been modified since audit :heavy_check_mark:" >> $GITHUB_STEP_SUMMARY
           else
-            echo "Contract changes since audit :warning:" >> $GITHUB_STEP_SUMMARY
+            echo "Contracts have been modified since audit :warning:" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`diff" >> $GITHUB_STEP_SUMMARY
             echo "$audit_diff" >> $GITHUB_STEP_SUMMARY
@@ -141,6 +141,17 @@ jobs:
           fi
         env:
           AUDIT_COMMIT: ${{ steps.parse.outputs.release_audited }}
+
+      - name: Comment on PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: require('fs').readFileSync(process.env.GITHUB_STEP_SUMMARY).toString(),
+            })
 
   deploy:
     name: Deploy contracts
@@ -176,6 +187,18 @@ jobs:
           DEFENDER_API_SECRET: "${{ secrets.DEFENDER_API_SECRET }}"
           RELEASE_PATH: "${{ needs.prepare.outputs.release_path }}"
           MULTISIG_ADDRESS: "${{ needs.prepare.outputs.release_multisig }}"
+
+      - name: Comment on PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const body = require('fs').readFileSync(process.env.GITHUB_STEP_SUMMARY).toString();
+            if (body.length > 0) github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            })
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -254,3 +277,15 @@ jobs:
           DEFENDER_API_SECRET: "${{ secrets.DEFENDER_API_SECRET }}"
           RELEASE_PATH: "${{ needs.prepare.outputs.release_path }}"
           MULTISIG_ADDRESS: "${{ needs.prepare.outputs.release_multisig }}"
+
+      - name: Comment on PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const body = require('fs').readFileSync(process.env.GITHUB_STEP_SUMMARY).toString();
+            if (body.length > 0) github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            })

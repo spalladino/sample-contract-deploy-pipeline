@@ -54,10 +54,10 @@ async function main(args: { multisig?: string }, hre: HRE) {
   })
 
   console.error(`Created upgrade proposal for multisig ${multisig} at ${proposal.url}`);
-  
+
   if (summaryPath) {
     const multisigLink = `https://app.safe.global/${toEIP3770(chainId, multisig)}/home`;
-    writeFileSync(summaryPath, `## Approval\n\n[Approval required](${proposal.url}) by multisig [${multisig}](${multisigLink}) signers.`);
+    writeFileSync(summaryPath, `## Approval\n\n[Approval required](${proposal.url}) by multisig [\`${multisig}\`](${multisigLink}) signers.`);
   }
 }
 
