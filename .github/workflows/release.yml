@@ -123,7 +123,7 @@ jobs:
           COMMIT: ${{ github.event.pull_request.head.sha }}
       
       - name: Output audit info
-        if: 'steps.parse.release_audited != ""'
+        if: "steps.parse.outputs.release_audited != ''"
         run: |
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "### Audit" >> $GITHUB_STEP_SUMMARY
