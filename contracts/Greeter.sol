@@ -25,7 +25,7 @@ contract Greeter is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     function version() external pure returns (string memory) {
-      return "v1.4.0";
+      return "v1.4.1";
     }
 
     function greet() external view returns (string memory) {
