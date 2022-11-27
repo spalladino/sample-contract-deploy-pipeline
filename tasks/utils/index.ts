@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { parse as parseYaml } from 'yaml';
+import chainsMini from './chains_mini.json';
 
 const RELEASE_PATH = process.env.RELEASE_PATH;
 const DEPLOYED_PATH = RELEASE_PATH ? `${RELEASE_PATH}/deployed.json` : null;
@@ -43,4 +44,10 @@ export function writeDeploy(chainId: number, name: string, data: Partial<Contrac
     addressBook[chainId][name] = { ...addressBook[chainId][name], ...data };
     writeFileSync(ADDRESS_BOOK_PATH, JSON.stringify(addressBook, null, 2));
   }
+}
+
+export function toEIP3770(chainId: number, address: string): string {
+  const network = chainsMini.find(c => c.chainId === chainId);
+  if (!network) throw new Error(`Network ${chainId} not found`);
+  return `${network.shortName}:${address}`;
 }
