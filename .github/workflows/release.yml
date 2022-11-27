@@ -183,7 +183,7 @@ jobs:
         if: always()
         with:
           commit_message: Update registries of deployed addresses
-          file_pattern: '.openzeppelin/ releases/'
+          file_pattern: '.openzeppelin/ releases/ addresses.json'
           skip_checkout: true
 
   verify:
