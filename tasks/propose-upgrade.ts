@@ -4,14 +4,14 @@ import { writeFileSync } from 'fs';
 import { task } from 'hardhat/config';
 import { HardhatRuntimeEnvironment as HRE } from 'hardhat/types';
 import { pickBy } from 'lodash';
-import { getAddressBookEntry, getReleaseDeploys, getReleaseInfo } from './utils';
+import { getAddressBookEntry, getReleaseDeploys, getReleaseInfo, toEIP3770 } from './utils';
 
 const proxyAbi = [{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"}];
 const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 
 async function main(args: { multisig?: string }, hre: HRE) {
   const { ethers, config } = hre;
-  const multisig = args.multisig || process.env.MULTISIG_ADDRESS;
+  const multisig = args.multisig || process.env.MULTISIG_ADDRESS!;
   const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
   const network = fromChainId(chainId)!;
   const deployed = pickBy(getReleaseDeploys(), c => !!c.implementation);
@@ -54,8 +54,10 @@ async function main(args: { multisig?: string }, hre: HRE) {
   })
 
   console.error(`Created upgrade proposal for multisig ${multisig} at ${proposal.url}`);
+  
   if (summaryPath) {
-    writeFileSync(summaryPath, `## Approval\n\nRequired approval by multisig ${multisig} signers [here](${proposal.url})`);
+    const multisigLink = `https://app.safe.global/${toEIP3770(chainId, multisig)}/home`;
+    writeFileSync(summaryPath, `## Approval\n\n[Approval required](${proposal.url}) by multisig [${multisig}](${multisigLink}) signers.`);
   }
 }
 
