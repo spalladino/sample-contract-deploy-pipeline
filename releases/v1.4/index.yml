@@ -1,6 +1,6 @@
 title: Deploy Greeter
 network: goerli
-deploy: run $RELEASE_PATH/deploy.ts
+deploy: deploy-proxy Greeter
 verify: verify-deployed
 description: |
   Create upgradeable Greeter contract.
