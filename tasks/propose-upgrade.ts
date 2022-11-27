@@ -9,8 +9,9 @@ import { getAddressBookEntry, getReleaseDeploys, getReleaseInfo, toEIP3770 } fro
 const proxyAbi = [{"inputs":[{"internalType":"address","name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"stateMutability":"nonpayable","type":"function"}];
 const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 
-async function main(args: { multisig?: string }, hre: HRE) {
+async function main(args: { multisig?: string, referenceUrl?: string }, hre: HRE) {
   const { ethers, config } = hre;
+  const referenceUrl = args.referenceUrl || process.env.ARTIFACT_REFERENCE_URL
   const multisig = args.multisig || process.env.MULTISIG_ADDRESS!;
   const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
   const network = fromChainId(chainId)!;
@@ -40,7 +41,9 @@ async function main(args: { multisig?: string }, hre: HRE) {
 
   const releaseInfo = getReleaseInfo() || {};
   const title = releaseInfo['title'] || 'Upgrade';
-  const description = releaseInfo['description'] || contracts.map(c => `${c.name} at ${c.address} to ${c.newImplementation}`).join('\n');
+  
+  let description = releaseInfo['description'] || contracts.map(c => `${c.name} at ${c.address} to ${c.newImplementation}.`).join('\n');
+  if (referenceUrl) description += `\n${referenceUrl}`;
 
   const proposal = await defenderAdmin.createProposal({
     contract: contracts,
@@ -62,6 +65,7 @@ async function main(args: { multisig?: string }, hre: HRE) {
 }
 
 task('propose-upgrade')
+  .addOptionalParam('referenceUrl', 'Link to the deployment pipeline run (defaults to $ARTIFACT_REFERENCE_URL)')
   .addOptionalParam('multisig', 'Address of the multisig that needs to approve the upgrade (defaults to $MULTISIG_ADDRESS if env var is set)')
   .setDescription('Proposes a system upgrade as a batch in Defender Admin')
   .setAction(main);
