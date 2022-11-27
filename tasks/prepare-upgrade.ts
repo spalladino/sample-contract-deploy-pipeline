@@ -21,7 +21,7 @@ function getNewImplementation(prepareUpgradeResult: DeployImplementationResponse
 }
 
 async function prepareUpgrade(hre: HRE, chainId: number, contract: string) { 
-  console.error(`- Deploying new implementation for contract ${contract}`);
+  console.error(`Deploying new implementation for contract ${contract}`);
   const { upgrades, ethers } = hre;
 
   const info = getAddressBookEntry(chainId, contract);

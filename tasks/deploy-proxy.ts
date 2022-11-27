@@ -12,12 +12,12 @@ function getEtherscanDomain(hre: HRE) {
   return `${network}.etherscan.io`;
 }
 
-async function deploy(hre: HRE, chainId: number, contract: string) { 
-  console.error(`- Deploying contract ${contract}`);
+async function deploy(hre: HRE, chainId: number, contract: string, args?: string[]) { 
+  console.error(`Deploying contract ${contract}`);
   const { upgrades, ethers } = hre;
 
   const factory = await ethers.getContractFactory(contract);
-  const instance = await upgrades.deployProxy(factory, [], { kind: 'uups' }).then(d => d.deployed());
+  const instance = await upgrades.deployProxy(factory, args ?? [], { kind: 'uups' }).then(d => d.deployed());
   const implementation = await upgrades.erc1967.getImplementationAddress(instance.address);
 
   console.error(` Deployed ${contract} at ${instance.address} with implementation ${implementation}`);
@@ -26,29 +26,27 @@ async function deploy(hre: HRE, chainId: number, contract: string) {
   return implementation;
 }
 
-async function main(args: { contracts: string[] }, hre: HRE) {
-  const { contracts } = args;
+async function main(args: { contract: string, initArgs: string[] }, hre: HRE) {
+  const { contract, initArgs } = args;
   const { ethers } = hre;
-  if (contracts.length === 0) return;
-  
+
   const commit = execSync(`/usr/bin/git log -1 --format='%H'`).toString().trim();
   const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
-  console.error(`Deploying contracts ${contracts.join(', ')} from commit ${commit} on chain ${chainId}`);
+  console.error(`Deploying contract ${contract} from commit ${commit} on chain ${chainId}`);
   
   try {
-    for (const contract of contracts) {
-      await deploy(hre, chainId, contract);
-    } 
+    await deploy(hre, chainId, contract, initArgs);
   } finally {
     const deployed = getReleaseDeploys();
     if (summaryPath && deployed && Object.entries(deployed).length > 0) {
       const list = Object.entries(deployed).map(([name, info]) => `- ${name} at [\`${info.address}\`](https://${getEtherscanDomain(hre)}/address/${info.address}) with implementation at [\`${info.implementation}\`](https://${getEtherscanDomain(hre)}/address/${info.implementation})`);
-      appendFileSync(summaryPath, `## Contracts deployed\n\n${list.join('\n')}\n`);
+      appendFileSync(summaryPath, `## Contract deployed\n\n${list.join('\n')}\n`);
     }
   }
 }
 
 task('deploy-proxy')
-  .addVariadicPositionalParam('contracts', 'Names of the contracts to deploy as upgradeable', [], types.string)
-  .setDescription('Deploys new contracts as upgradeable')
+  .addPositionalParam('contract', 'Name of the contract to deploy as upgradeable', [], types.string)
+  .addOptionalVariadicPositionalParam('initArgs', 'Initializer arguments (if any)', [])
+  .setDescription('Deploys new contract as upgradeable')
   .setAction(main);
