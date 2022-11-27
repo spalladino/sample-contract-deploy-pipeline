@@ -1,9 +1,8 @@
-const { readFileSync, writeFileSync, existsSync } = require('fs');
+const { appendFileSync } = require('fs');
 const { execSync } = require('child_process');
 const { task, types } = require('hardhat/config');
+const { getContractInfo, writeDeploy } = require('./utils');
 
-const addressBookPath = 'addresses.json';
-const releasePath = process.env.RELEASE_PATH;
 const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 
 function getEtherscanDomain(hre) {
@@ -12,22 +11,18 @@ function getEtherscanDomain(hre) {
   return `${network}.etherscan.io`;
 }
 
-async function prepareUpgrade(hre, contract) { 
+async function prepareUpgrade(hre, chainId, contract) { 
   console.error(`- Deploying new implementation for contract ${contract}`);
   const { upgrades, ethers } = hre;
 
-  const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
-  const addressBook = JSON.parse(readFileSync(addressBookPath));
-  const info = (addressBook[chainId.toString()] || {})[contract];
-  if (!info) throw new Error(`Could not find info for ${contract} on chain ${chainId}`);
-  console.error(` Proxy contract for ${contract} at ${info.address}`)
+  const info = getContractInfo(chainId, contract);
+  console.error(` Proxy for ${contract} at ${info.address}`)
 
   const factory = await ethers.getContractFactory(contract);
   const implementation = await upgrades.prepareUpgrade(info.address, factory, { kind: 'uups' });
 
   console.error(` Deployed new implementation for ${contract} at ${implementation}`);
-  info.implementation = implementation;
-  writeFileSync(addressBookPath, JSON.stringify(addressBook, null, 2));
+  writeDeploy(chainId, contract, { implementation });
 
   return implementation;
 }
@@ -35,24 +30,20 @@ async function prepareUpgrade(hre, contract) {
 async function main(args, hre) {
   const { contracts } = args;
   if (contracts.length === 0) return;
-  const output = args.output || (releasePath ? `${releasePath}/deployed.json` : null);
-  const deployed = output && existsSync(output) ? JSON.parse(readFileSync(output)) : {};
   
   const commit = execSync(`/usr/bin/git log -1 --format='%H'`).toString().trim();
-  console.error(`Deploying implementation contracts ${contracts.join(', ')} from commit ${commit}`);
+  const chainId = await ethers.provider.getNetwork().then(n => n.chainId);
+  console.error(`Deploying implementation contracts ${contracts.join(', ')} from commit ${commit} on chain ${chainId}`);
   
   try {
     for (const contract of contracts) {
-      const implementation = await prepareUpgrade(hre, contract);
-      deployed[contract] = implementation;
+      await prepareUpgrade(hre, chainId, contract);
     } 
   } finally {
-    if (output) {
-      writeFileSync(output, JSON.stringify(deployed, null, 2));
-    }
+    const deployed = getReleaseDeploys();
     if (summaryPath && Object.entries(deployed).length > 0) {
-      const list = Object.entries(deployed).map(([name, impl]) => `- ${name} at [${impl}](https://${getEtherscanDomain(hre)}/address/${impl})`);
-      writeFileSync(summaryPath, `## Deployments\n\n${list.join('\n')}\n`)
+      const list = Object.entries(deployed).map(([name, info]) => `- ${name} at [${info.implementation}](https://${getEtherscanDomain(hre)}/address/${info.implementation})`);
+      appendFileSync(summaryPath, `## Implementation contracts deployed\n\n${list.join('\n')}\n`);
     }
   }
 }

@@ -3,6 +3,7 @@ network: goerli
 deploy: prepare-upgrade Box
 verify: verify-deployed
 finish: propose-upgrade
+audited: f37fb0c75b4ec2c13e063d257499e7dcc643e468
 description: |
-  Upgrades Box contract to v1.3
-  Bumps version identifier in the contract
+  Upgrades Box contract to v1.3.
+  Bumps version identifier in the contract.
