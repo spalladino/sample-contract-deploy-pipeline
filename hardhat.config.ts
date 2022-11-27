@@ -8,6 +8,7 @@ import '@openzeppelin/hardhat-defender';
 import './tasks/prepare-upgrade';
 import './tasks/verify-deployed';
 import './tasks/propose-upgrade';
+import './tasks/deploy-proxy';
 import './tasks/noop';
 
 import { HardhatUserConfig } from "hardhat/config";
