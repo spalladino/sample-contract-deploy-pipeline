@@ -4,6 +4,12 @@ This is a proof of concept for a smart contract deployment pipeline using Github
 
 ![Workflow diagram](imgs/workflow-diagram.png)
 
+## Why?
+
+Unlike traditional software deployments, contract deployments are usually run by a developer from their local workstation. This is not just a hassle for the developer, but it also hinders transparency and reproducibility of deployments. By moving them to a publicly auditable deployment pipeline, anyone can follow the trace from the source code to a deployed address. 
+
+This is especially valuable for protocol stakeholders (from signers to community members) who need to review the deployment or upgrade to a specific version of the code. A stakeholder needs to know if the code deployed matches a specific version, often described by a git tag or commit, that has already been reviewed or even audited. Having a public compilation and deployment pipeline makes it easy to check that the bytecode deployed at a specific address was generated out of a given version of the source code.
+
 ## Example
 
 The following release spec in a pull request from branch `release/1.3` will compile all contracts, run tests, compare the source deployed versus the audited one, deploy a new implementation for the `Box` contract, verify its source code and binary, and create a new proposal for upgrading it. The workflow optionally pauses before sending the deployment transactions and creating the proposal and requires a manual review before proceeding.
