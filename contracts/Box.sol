@@ -25,7 +25,7 @@ contract Box is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     function version() external pure returns (string memory) {
-      return "v1.3.7";
+      return "v1.3.8";
     }
 
     function _authorizeUpgrade(address newImplementation)
